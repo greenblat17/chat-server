@@ -57,21 +57,22 @@ func (r *repo) Create(ctx context.Context, chat *model.Chat) (int64, error) {
 	}
 
 	// Вставка пользователей чата
+	sqb = sq.Insert(chatUserTable).
+		Columns(chatIDColumn, usernameColumn).
+		PlaceholderFormat(sq.Dollar)
+
 	for _, username := range chat.Usernames {
-		sqb = sq.Insert(chatUserTable).
-			Columns(chatIDColumn, usernameColumn).
-			Values(chatID, username).
-			PlaceholderFormat(sq.Dollar)
+		sqb = sqb.Values(chatID, username)
+	}
 
-		sql, args, err = sqb.ToSql()
-		if err != nil {
-			return 0, err
-		}
+	sql, args, err = sqb.ToSql()
+	if err != nil {
+		return 0, err
+	}
 
-		_, err = tx.Exec(ctx, sql, args...)
-		if err != nil {
-			return 0, err
-		}
+	_, err = tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return 0, err
 	}
 
 	// Если всё прошло успешно, фиксируем транзакцию
