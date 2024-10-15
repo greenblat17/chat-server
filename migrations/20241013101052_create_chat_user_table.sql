@@ -3,7 +3,7 @@
 CREATE TABLE chat_users
 (
     chat_id  INT REFERENCES chats (id) ON DELETE CASCADE,
-    username VARCHAR(255) NOT NULL,
+    username TEXT NOT NULL,
     PRIMARY KEY (chat_id, username)
 );
 -- +goose StatementEnd
