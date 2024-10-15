@@ -45,7 +45,7 @@ func NewServer(chatRepository repository.ChatRepository, messageRepository repos
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	createdChat := &model.Chat{
 		Usernames: req.GetUsernames(),
-		Name:      req.GetName(),
+		ChatName:  req.GetChatName(),
 	}
 
 	id, err := s.chatRepository.Create(ctx, createdChat)

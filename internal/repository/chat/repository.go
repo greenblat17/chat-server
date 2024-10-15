@@ -14,7 +14,7 @@ const (
 	chatUserTable = "chat_users"
 
 	idColumn       = "id"
-	nameColumn     = "name"
+	nameColumn     = "chat_name"
 	chatIDColumn   = "chat_id"
 	usernameColumn = "username"
 )
@@ -40,7 +40,7 @@ func (r *repo) Create(ctx context.Context, chat *model.Chat) (int64, error) {
 	// SQL для вставки чата
 	sqb := sq.Insert(chatTable).
 		Columns(nameColumn).
-		Values(chat.Name).
+		Values(chat.ChatName).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar)
 
