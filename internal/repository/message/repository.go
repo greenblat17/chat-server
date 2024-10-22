@@ -2,11 +2,13 @@ package message
 
 import (
 	"context"
+	"errors"
+
+	"github.com/greenblat17/chat-server/internal/client/db"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/greenblat17/chat-server/internal/model"
 	"github.com/greenblat17/chat-server/internal/repository"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 const (
@@ -19,11 +21,11 @@ const (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
-// NewRepository creates a new user repository.
-func NewRepository(db *pgxpool.Pool) repository.MessageRepository {
+// NewRepository creates a user repository.
+func NewRepository(db db.Client) repository.MessageRepository {
 	return &repo{db: db}
 }
 
@@ -39,9 +41,18 @@ func (r *repo) Send(ctx context.Context, message *model.Message) error {
 		return err
 	}
 
-	_, err = r.db.Exec(ctx, sql, args...)
+	q := db.Query{
+		Name:     "MessageRepository.Send",
+		QueryRaw: sql,
+	}
+
+	res, err := r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return err
+	}
+
+	if res.RowsAffected() == 0 {
+		return errors.New("failed to save in db sending message")
 	}
 
 	return nil
