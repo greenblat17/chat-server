@@ -28,6 +28,8 @@ linters-settings:
   goconst:
     min-len: 2
     min-occurrences: 2
+  importas:
+    sortImports: true
 
 linters:
   disable-all: true

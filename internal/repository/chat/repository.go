@@ -2,11 +2,13 @@ package chat
 
 import (
 	"context"
+	"errors"
+
+	"github.com/greenblat17/chat-server/internal/client/db"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/greenblat17/chat-server/internal/model"
 	"github.com/greenblat17/chat-server/internal/repository"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 const (
@@ -20,24 +22,16 @@ const (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
-// NewRepository creates a new user repository.
-func NewRepository(db *pgxpool.Pool) repository.ChatRepository {
+// NewRepository creates a chat repository.
+func NewRepository(db db.Client) repository.ChatRepository {
 	return &repo{db: db}
 }
 
 // Create creates a new chat.
 func (r *repo) Create(ctx context.Context, chat *model.Chat) (int64, error) {
-	// Начало транзакции
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return 0, err
-	}
-	defer func() { _ = tx.Rollback(ctx) }()
-
-	// SQL для вставки чата
 	sqb := sq.Insert(chatTable).
 		Columns(nameColumn).
 		Values(chat.ChatName).
@@ -49,34 +43,13 @@ func (r *repo) Create(ctx context.Context, chat *model.Chat) (int64, error) {
 		return 0, err
 	}
 
-	// Выполнение запроса на вставку чата
+	q := db.Query{
+		Name:     "ChatRepository.Create",
+		QueryRaw: sql,
+	}
+
 	var chatID int64
-	err = tx.QueryRow(ctx, sql, args...).Scan(&chatID)
-	if err != nil {
-		return 0, err
-	}
-
-	// Вставка пользователей чата
-	sqb = sq.Insert(chatUserTable).
-		Columns(chatIDColumn, usernameColumn).
-		PlaceholderFormat(sq.Dollar)
-
-	for _, username := range chat.Usernames {
-		sqb = sqb.Values(chatID, username)
-	}
-
-	sql, args, err = sqb.ToSql()
-	if err != nil {
-		return 0, err
-	}
-
-	_, err = tx.Exec(ctx, sql, args...)
-	if err != nil {
-		return 0, err
-	}
-
-	// Если всё прошло успешно, фиксируем транзакцию
-	err = tx.Commit(ctx)
+	err = r.db.DB().ScanOneContext(ctx, &chatID, q, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -86,14 +59,6 @@ func (r *repo) Create(ctx context.Context, chat *model.Chat) (int64, error) {
 
 // Delete deletes a chat.
 func (r *repo) Delete(ctx context.Context, id int64) error {
-	// Начало транзакции
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = tx.Rollback(ctx) }()
-
-	// Удаление пользователей, связанных с чатом
 	sqb := sq.Delete(chatUserTable).
 		Where(sq.Eq{chatIDColumn: id}).
 		PlaceholderFormat(sq.Dollar)
@@ -103,30 +68,18 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 
-	_, err = tx.Exec(ctx, sql, args...)
+	q := db.Query{
+		Name:     "ChatRepository.Delete",
+		QueryRaw: sql,
+	}
+
+	res, err := r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return err
 	}
 
-	// Удаление самого чата
-	sqb = sq.Delete(chatTable).
-		Where(sq.Eq{idColumn: id}).
-		PlaceholderFormat(sq.Dollar)
-
-	sql, args, err = sqb.ToSql()
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx, sql, args...)
-	if err != nil {
-		return err
-	}
-
-	// Если всё прошло успешно, фиксируем транзакцию
-	err = tx.Commit(ctx)
-	if err != nil {
-		return err
+	if res.RowsAffected() == 0 {
+		return errors.New("chat not deleted from database")
 	}
 
 	return nil
