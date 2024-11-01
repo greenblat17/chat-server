@@ -6,9 +6,9 @@ import (
 	"log"
 	"net"
 
-	"github.com/greenblat17/chat-server/internal/closer"
 	"github.com/greenblat17/chat-server/internal/config"
 	desc "github.com/greenblat17/chat-server/pkg/chat_v1"
+	"github.com/greenblat17/platform-common/pkg/closer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"

@@ -5,10 +5,6 @@ import (
 	"log"
 
 	"github.com/greenblat17/chat-server/internal/api/chat"
-	"github.com/greenblat17/chat-server/internal/client/db"
-	"github.com/greenblat17/chat-server/internal/client/db/pg"
-	"github.com/greenblat17/chat-server/internal/client/db/transaction"
-	"github.com/greenblat17/chat-server/internal/closer"
 	"github.com/greenblat17/chat-server/internal/config"
 	"github.com/greenblat17/chat-server/internal/config/env"
 	"github.com/greenblat17/chat-server/internal/repository"
@@ -19,6 +15,10 @@ import (
 	"github.com/greenblat17/chat-server/internal/service"
 	chatService "github.com/greenblat17/chat-server/internal/service/chat"
 	messageService "github.com/greenblat17/chat-server/internal/service/message"
+	"github.com/greenblat17/platform-common/pkg/closer"
+	"github.com/greenblat17/platform-common/pkg/db"
+	"github.com/greenblat17/platform-common/pkg/db/pg"
+	"github.com/greenblat17/platform-common/pkg/db/transaction"
 )
 
 type serviceProvider struct {

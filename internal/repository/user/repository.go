@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/greenblat17/chat-server/internal/client/db"
+	"github.com/greenblat17/platform-common/pkg/db"
 )
 
 const (

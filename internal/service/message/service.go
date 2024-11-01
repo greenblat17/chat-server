@@ -1,9 +1,9 @@
 package message
 
 import (
-	"github.com/greenblat17/chat-server/internal/client/db"
 	"github.com/greenblat17/chat-server/internal/repository"
 	def "github.com/greenblat17/chat-server/internal/service"
+	"github.com/greenblat17/platform-common/pkg/db"
 )
 
 var _ def.MessageService = (*service)(nil)
