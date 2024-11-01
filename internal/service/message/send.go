@@ -16,7 +16,7 @@ func (s *service) Send(ctx context.Context, message *model.Message) error {
 			return errTx
 		}
 
-		errTx = s.auditRepository.Save(ctx, converter.ToAuditFromEntity(model.ChatEntityType, "send"))
+		errTx = s.auditRepository.Save(ctx, converter.ToAuditFromEntity(model.MessageEntityType, "send"))
 		if errTx != nil {
 			return errTx
 		}

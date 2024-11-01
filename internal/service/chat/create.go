@@ -18,7 +18,7 @@ func (s *service) Create(ctx context.Context, chat *model.Chat) (int64, error) {
 			return errTx
 		}
 
-		errTx = s.userRepository.SaveByChatID(ctx, chat.ID, chat.Usernames)
+		errTx = s.userRepository.SaveByChatID(ctx, id, chat.Usernames)
 		if errTx != nil {
 			return errTx
 		}
